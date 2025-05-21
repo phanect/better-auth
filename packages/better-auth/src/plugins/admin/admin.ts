@@ -33,13 +33,13 @@ export interface SessionWithImpersonatedBy extends Session {
 	impersonatedBy?: string;
 }
 
-export interface AdminOptions {
+export interface AdminOptions<RoleName extends string> {
 	/**
 	 * The default role for a user
 	 *
 	 * @default "user"
 	 */
-	defaultRole?: string;
+	defaultRole?: RoleName;
 	/**
 	 * Roles that are considered admin roles.
 	 *
@@ -48,7 +48,7 @@ export interface AdminOptions {
 	 *
 	 * @default ["admin"]
 	 */
-	adminRoles?: string | string[];
+	adminRoles?: RoleName | RoleName[];
 	/**
 	 * A default ban reason
 	 *
@@ -80,7 +80,7 @@ export interface AdminOptions {
 	 * Custom permissions for roles.
 	 */
 	roles?: {
-		[key in string]?: Role;
+		[key in RoleName]?: Role;
 	};
 	/**
 	 * List of user ids that should have admin access
@@ -400,7 +400,7 @@ export const admin = <O extends AdminOptions>(options?: O) => {
 					},
 				},
 				async (ctx) => {
-					const session = await getSessionFromCtx<{ role: string }>(ctx);
+					const session = await getSessionFromCtx<{ role: InferAdminRolesFromOption<O> }>(ctx);
 					if (!session && (ctx.request || ctx.headers)) {
 						throw ctx.error("UNAUTHORIZED");
 					}
